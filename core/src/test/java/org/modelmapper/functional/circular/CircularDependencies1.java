@@ -1,8 +1,10 @@
 package org.modelmapper.functional.circular;
 
-import static org.testng.Assert.assertNull;
+import static org.testng.Assert.*;
 
 import org.modelmapper.AbstractTest;
+import org.modelmapper.ConfigurationException;
+import org.modelmapper.PropertyMap;
 import org.testng.annotations.Test;
 
 /**

@@ -49,6 +49,9 @@ class TypeMapImpl<S, D> implements TypeMap<S, D> {
   private Converter<S, D> converter;
   private Condition<?, ?> condition;
   private Provider<D> provider;
+  private Converter<?, ?> propertyConverter;
+  private Condition<?, ?> propertyCondition;
+  private Provider<?> propertyProvider;
 
   TypeMapImpl(Class<S> sourceType, Class<D> destinationType, Configuration configuration,
       MappingEngineImpl engine) {
@@ -86,6 +89,18 @@ class TypeMapImpl<S, D> implements TypeMap<S, D> {
     synchronized (mappings) {
       return new ArrayList<Mapping>(mappings.values());
     }
+  }
+
+  public Condition<?, ?> getPropertyCondition() {
+    return propertyCondition;
+  }
+
+  public Converter<?, ?> getPropertyConverter() {
+    return propertyConverter;
+  }
+
+  public Provider<?> getPropertyProvider() {
+    return propertyProvider;
   }
 
   public Provider<D> getProvider() {
@@ -149,6 +164,21 @@ class TypeMapImpl<S, D> implements TypeMap<S, D> {
     return this;
   }
 
+  public TypeMap<S, D> setPropertyCondition(Condition<?, ?> condition) {
+    propertyCondition = Assert.notNull(condition, "condition");
+    return this;
+  }
+
+  public TypeMap<S, D> setPropertyConverter(Converter<?, ?> converter) {
+    propertyConverter = Assert.notNull(converter, "converter");
+    return this;
+  }
+
+  public TypeMap<S, D> setPropertyProvider(Provider<?> provider) {
+    propertyProvider = Assert.notNull(provider, "provider");
+    return this;
+  }
+
   public TypeMap<S, D> setProvider(Provider<D> provider) {
     this.provider = Assert.notNull(provider, "provider");
     return this;
@@ -174,8 +204,8 @@ class TypeMapImpl<S, D> implements TypeMap<S, D> {
 
   MappingImpl addMapping(MappingImpl mapping) {
     synchronized (mappings) {
-      mappedProperties.put(mapping.getDestinationProperties().get(0).getName(), mapping
-          .getDestinationProperties().get(0));
+      mappedProperties.put(mapping.getDestinationProperties().get(0).getName(),
+          mapping.getDestinationProperties().get(0));
       return mappings.put(mapping.getPath(), mapping);
     }
   }
@@ -185,6 +215,15 @@ class TypeMapImpl<S, D> implements TypeMap<S, D> {
    * need to synchronize here since the TypeMap is not exposed publicly yet.
    */
   boolean isMapped(String path) {
-    return mappedProperties.containsKey(path);
+    return mappings.containsKey(path);
+  }
+
+  /**
+   * Used by PropertyMapBuilder to determine if a skipped mapping exists for the {@code path}. No
+   * need to synchronize here since the TypeMap is not exposed publicly yet.
+   */
+  boolean isSkipped(String path) {
+    Mapping mapping = mappings.get(path);
+    return mapping != null && mapping.isSkipped();
   }
 }

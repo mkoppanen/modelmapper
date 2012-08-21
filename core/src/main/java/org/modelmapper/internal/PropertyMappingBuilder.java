@@ -210,7 +210,8 @@ class PropertyMappingBuilder<S, D> {
    */
   private void mergeMappings(TypeMap<?, ?> destinationMap) {
     for (Mapping mapping : destinationMap.getMappings())
-      typeMap.addMapping(((MappingImpl) mapping).createMergedCopy(propertyNameInfo.destinationProperties));
+      typeMap.addMapping(((MappingImpl) mapping).createMergedCopy(
+          propertyNameInfo.sourceProperties, propertyNameInfo.destinationProperties));
   }
 
   boolean isRecursivelyMatchable(Class<?> type) {
