@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.modelmapper.Converter;
 import org.modelmapper.TypeMap;
@@ -73,6 +74,8 @@ class ImplicitMappingBuilder<S, D> {
     new ImplicitMappingBuilder<S, D>(source, typeMap, typeMapStore, converterStore).build();
   }
 
+  private static final List<String> ignoredDestinationPaths = new ArrayList<String>();
+
   ImplicitMappingBuilder(S source, TypeMapImpl<S, D> typeMap, TypeMapStore typeMapStore,
       ConverterStore converterStore) {
     this.typeMap = typeMap;
@@ -99,6 +102,19 @@ class ImplicitMappingBuilder<S, D> {
       propertyNameInfo.pushDestination(entry.getKey(), entry.getValue());
       String destPath = Strings.join(propertyNameInfo.getDestinationProperties());
       Mutator mutator = entry.getValue();
+
+      boolean match = false;
+
+      for (final String p : configuration.getIgnoreDestinationPaths()) {
+        if (destPath.contains(p)) {
+          match = true;
+          break;
+        }
+      }
+
+      if (match) {
+        continue;
+      }
 
       // Skip explicit mappings
       Mapping existingMapping = typeMap.mappingFor(destPath);

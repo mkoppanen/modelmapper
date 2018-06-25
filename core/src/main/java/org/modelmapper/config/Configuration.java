@@ -427,4 +427,10 @@ public interface Configuration {
    * @throws IllegalArgumentException if {@code namingConvention} is null
    */
   Configuration setSourceNamingConvention(NamingConvention namingConvention);
+
+  // Patch - Mikko
+
+  List<String> getIgnoreDestinationPaths();
+
+  Configuration setIgnoreDestinationPaths(List<String> ignoreDestinationPaths);
 }

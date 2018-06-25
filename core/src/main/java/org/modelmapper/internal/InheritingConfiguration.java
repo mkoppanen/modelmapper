@@ -15,6 +15,7 @@
  */
 package org.modelmapper.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.modelmapper.Condition;
@@ -65,6 +66,7 @@ public class InheritingConfiguration implements Configuration {
   private Boolean implicitMatchingEnabled;
   private Boolean skipNullEnabled;
   private Boolean useOSGiClassLoaderBridging;
+  private List<String> ignoreDestinationPaths;
 
   /**
    * Creates an initial InheritingConfiguration.
@@ -90,6 +92,7 @@ public class InheritingConfiguration implements Configuration {
     implicitMatchingEnabled = Boolean.TRUE;
     skipNullEnabled = Boolean.FALSE;
     useOSGiClassLoaderBridging = Boolean.FALSE;
+    ignoreDestinationPaths = new ArrayList<String>();
   }
 
   /**
@@ -122,6 +125,7 @@ public class InheritingConfiguration implements Configuration {
       fullTypeMatchingRequired = source.fullTypeMatchingRequired;
       implicitMatchingEnabled = source.implicitMatchingEnabled;
       skipNullEnabled = source.skipNullEnabled;
+      ignoreDestinationPaths = source.ignoreDestinationPaths;
     }
   }
 
@@ -261,6 +265,10 @@ public class InheritingConfiguration implements Configuration {
   @Override
   public List<ValueWriter<?>> getValueWriters() {
     return valueMutateStore.getValueWriters();
+  }
+
+  public List<String> getIgnoreDestinationPaths() {
+    return ignoreDestinationPaths;
   }
 
   /**
@@ -434,6 +442,11 @@ public class InheritingConfiguration implements Configuration {
   @Override
   public Configuration setUseOSGiClassLoaderBridging(boolean useOSGiClassLoaderBridging) {
     this.useOSGiClassLoaderBridging = useOSGiClassLoaderBridging;
+    return this;
+  }
+
+  public Configuration setIgnoreDestinationPaths(List<String> ignoreDestinationPaths) {
+    this.ignoreDestinationPaths = ignoreDestinationPaths;
     return this;
   }
 }
