@@ -16,6 +16,7 @@
 package org.modelmapper.config;
 
 import java.util.List;
+import java.util.Map;
 
 import org.modelmapper.Condition;
 import org.modelmapper.PropertyMap;
@@ -430,7 +431,6 @@ public interface Configuration {
 
   // Patch - Mikko
 
-  List<String> getIgnoreDestinationPaths();
-
-  Configuration setIgnoreDestinationPaths(List<String> ignoreDestinationPaths);
+  Map<String, List<String>> getIgnoreDestinationPaths();
+  Configuration setIgnoreDestinationPaths(Map<String, List<String>> ignoreDestinationPaths);
 }

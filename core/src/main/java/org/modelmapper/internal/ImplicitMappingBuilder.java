@@ -69,12 +69,12 @@ class ImplicitMappingBuilder<S, D> {
   /** Mappings which are to be merged in from a pre-existing TypeMap. */
   private final List<InternalMapping> mergedMappings = new ArrayList<InternalMapping>();
 
+  private List<String> ignorePaths = null;
+
   static <S, D> void build(S source, TypeMapImpl<S, D> typeMap, TypeMapStore typeMapStore,
       ConverterStore converterStore) {
     new ImplicitMappingBuilder<S, D>(source, typeMap, typeMapStore, converterStore).build();
   }
-
-  private static final List<String> ignoredDestinationPaths = new ArrayList<String>();
 
   ImplicitMappingBuilder(S source, TypeMapImpl<S, D> typeMap, TypeMapStore typeMapStore,
       ConverterStore converterStore) {
@@ -85,6 +85,14 @@ class ImplicitMappingBuilder<S, D> {
     sourceTypeInfo = TypeInfoRegistry.typeInfoFor(source, typeMap.getSourceType(), configuration);
     matchingStrategy = configuration.getMatchingStrategy();
     propertyNameInfo = new PropertyNameInfoImpl(typeMap.getSourceType(), configuration);
+
+    final String packageName = typeMap.getDestinationType().getPackage().getName();
+    for (Map.Entry<String, List<String>> entry : configuration.getIgnoreDestinationPaths().entrySet()) {
+      if (packageName.startsWith(entry.getKey())) {
+        ignorePaths = entry.getValue();
+        break;
+      }
+    }
   }
 
   void build() {
@@ -99,22 +107,13 @@ class ImplicitMappingBuilder<S, D> {
     destinationTypes.add(destinationTypeInfo.getType());
 
     for (Map.Entry<String, Mutator> entry : destinationTypeInfo.getMutators().entrySet()) {
+      if (ignorePaths != null && ignorePaths.contains(entry.getKey())) {
+        continue;
+      }
+
       propertyNameInfo.pushDestination(entry.getKey(), entry.getValue());
       String destPath = Strings.join(propertyNameInfo.getDestinationProperties());
       Mutator mutator = entry.getValue();
-
-      boolean match = false;
-
-      for (final String p : configuration.getIgnoreDestinationPaths()) {
-        if (destPath.contains(p)) {
-          match = true;
-          break;
-        }
-      }
-
-      if (match) {
-        continue;
-      }
 
       // Skip explicit mappings
       Mapping existingMapping = typeMap.mappingFor(destPath);
