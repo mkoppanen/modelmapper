@@ -1,17 +1,10 @@
 package org.modelmapper.jackson;
 
-import java.lang.reflect.ParameterizedType;
-import java.util.Collection;
-
-import org.modelmapper.internal.util.MappingContextHelper;
-import org.modelmapper.internal.util.Types;
-import org.modelmapper.spi.ConditionalConverter;
-import org.modelmapper.spi.Mapping;
-import org.modelmapper.spi.MappingContext;
-import org.modelmapper.spi.PropertyInfo;
-import org.modelmapper.spi.PropertyMapping;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.util.Collection;
+import org.modelmapper.internal.util.MappingContextHelper;
+import org.modelmapper.spi.ConditionalConverter;
+import org.modelmapper.spi.MappingContext;
 
 /**
  * Converts {@link ArrayNode} instances to {@link Collection} instances.
@@ -31,10 +24,10 @@ public class ArrayNodeToCollectionConverter implements ConditionalConverter<Arra
     if (source == null)
       return null;
 
-    int sourceLength = source.size();
-    Collection<Object> destination = context.getDestination() == null ? createDestination(context, sourceLength)
+    Collection<Object> destination = context.getDestination() == null
+        ? MappingContextHelper.createCollection(context)
         : context.getDestination();
-    Class<?> elementType = MappingContextHelper.resolveCollectionElementType(context);
+    Class<?> elementType = MappingContextHelper.resolveDestinationGenericType(context);
 
     for (Object sourceElement : source) {
       Object element = null;
@@ -46,10 +39,5 @@ public class ArrayNodeToCollectionConverter implements ConditionalConverter<Arra
     }
 
     return destination;
-  }
-
-  private Collection<Object> createDestination(
-      MappingContext<ArrayNode, Collection<Object>> context, int length) {
-    return MappingContextHelper.createCollection(context, length);
   }
 }

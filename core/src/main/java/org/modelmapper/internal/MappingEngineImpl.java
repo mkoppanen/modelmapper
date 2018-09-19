@@ -15,6 +15,7 @@
  */
 package org.modelmapper.internal;
 
+import java.lang.reflect.Type;
 import org.modelmapper.Condition;
 import org.modelmapper.ConfigurationException;
 import org.modelmapper.Converter;
@@ -127,20 +128,22 @@ public class MappingEngineImpl implements MappingEngine {
       context.setDestination(destinationProperty(context), false);
 
     context.setTypeMap(typeMap);
+
+    @SuppressWarnings("unchecked")
+    Condition<S, D> condition = (Condition<S, D>) typeMap.getCondition();
+    boolean noSkip = condition == null || condition.applies(context);
+
+    if (noSkip && typeMap.getConverter() != null)
+      return convert(context, typeMap.getConverter());
+
     if (context.getDestination() == null && Types.isInstantiable(context.getDestinationType())) {
       D destination = createDestination(context);
       if (destination == null)
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    Condition<S, D> condition = (Condition<S, D>) typeMap.getCondition();
-    Converter<S, D> converter = typeMap.getConverter();
-    if (condition == null || condition.applies(context)) {
-      if (converter != null)
-        return convert(context, converter);
-
-      converter = typeMap.getPreConverter();
+    if (noSkip) {
+      Converter<S, D> converter = typeMap.getPreConverter();
       if (converter != null)
         context.setDestination(convert(context, converter), true);
 
@@ -258,9 +261,12 @@ public class MappingEngineImpl implements MappingEngine {
   private MappingContextImpl<Object, Object> propertyContextFor(MappingContextImpl<?, ?> context,
       Object source, MappingImpl mapping) {
     Class<?> sourceType = mapping.getSourceType();
+    if (Object.class.equals(sourceType) && source != null)
+      sourceType = source.getClass();
     boolean cyclic = mapping instanceof PropertyMapping && ((PropertyMappingImpl) mapping).cyclic;
     Class<Object> destinationType = (Class<Object>) mapping.getLastDestinationProperty().getType();
-    return new MappingContextImpl(context, source, sourceType, null, destinationType, null,
+    Type genericDestinationType = context.genericDestinationPropertyType(mapping.getLastDestinationProperty().getGenericType());
+    return new MappingContextImpl(context, source, sourceType, null, destinationType, genericDestinationType,
         mapping, !cyclic);
   }
 

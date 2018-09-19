@@ -1,3 +1,30 @@
+# 2.2.0
+
+### New Features
+
+* Provides ModelMapper.addConverter(sourceType, destinationType, converter)
+* Provides Converters.Collection.map() to create converter for collection
+* Provides builder pattern support
+
+### Bug Fixes
+
+* Fixed #379: Mapping generic types not working
+* Fixed #151: Converter not working properly
+* Fixed #386: Mapping Source object to Destination object for iterable correctly
+
+# 2.1.1
+
+### New Features
+
+* Protocol buffer module
+
+### Bug Fixes
+
+* Fixed #363: Fixes OSGi loading issue
+* Fixed #364: Resolves type correctly
+* Fixed #370: Fixes MapValueReader get wrong field type
+* Fixed #372: Explicit property mapping will failed when using source(propertyPath) with List type
+
 # 2.1.0
 
 ### New Features

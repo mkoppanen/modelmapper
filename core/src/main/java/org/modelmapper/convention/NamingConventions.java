@@ -56,6 +56,44 @@ public class NamingConventions {
   };
 
   /**
+   * Creates NameTransformer for builder.
+   * @return a NamingConvention
+   */
+  public static NamingConvention builder() {
+    return builder("");
+  }
+
+  /**
+   * Creates NamingConvention for builder.
+   *
+   * @param prefix the prefix for the setter of the builder
+   * @return a NamingConvention
+   */
+  public static NamingConvention builder(String prefix) {
+    return new BuilderNamingConventions(prefix);
+  }
+
+  /**
+   * Naming convention for builder.
+   */
+  private static class BuilderNamingConventions implements NamingConvention {
+    private String prefix;
+
+    private BuilderNamingConventions(String prefix) {
+      this.prefix = prefix;
+    }
+
+    public boolean applies(String propertyName, PropertyType propertyType) {
+      return PropertyType.METHOD.equals(propertyType) && propertyName.startsWith(prefix);
+    }
+
+    @Override
+    public String toString() {
+      return "Builder(prefix=" + prefix + ")";
+    }
+  }
+
+  /**
    * Represents no naming convention. This convention
    * {@link NamingConvention#applies(String, PropertyType) applies} to all property names, allowing
    * all properties to be eligible for matching.
