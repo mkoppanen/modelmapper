@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.modelmapper.Converter;
-import org.modelmapper.ExpressionMap;
 import org.modelmapper.PropertyMap;
 import org.modelmapper.TypeMap;
 import org.modelmapper.internal.util.Primitives;
@@ -61,7 +60,7 @@ public final class TypeMapStore {
    * Creates a  empty TypeMap. If {@code converter} is null, the TypeMap is configured with implicit
    * mappings, else the {@code converter} is set against the TypeMap.
    */
-  public <S, D> TypeMap<S, D> createEmptyTypeMap(S source, Class<S> sourceType, Class<D> destinationType,
+  public <S, D> TypeMap<S, D> createEmptyTypeMap(Class<S> sourceType, Class<D> destinationType,
       String typeMapName, InheritingConfiguration configuration, MappingEngineImpl engine) {
     synchronized (lock) {
       TypeMapImpl<S, D> typeMap = new TypeMapImpl<S, D>(sourceType, destinationType, typeMapName,
@@ -100,7 +99,7 @@ public final class TypeMapStore {
    */
   public <S, D> TypeMap<S, D> getOrCreate(S source, Class<S> sourceType, Class<D> destinationType,
       String typeMapName, MappingEngineImpl engine) {
-    return this.<S, D>getOrCreate(source, sourceType, destinationType, typeMapName, null, null,
+    return getOrCreate(source, sourceType, destinationType, typeMapName, null, null,
         engine);
   }
 
@@ -141,23 +140,6 @@ public final class TypeMapStore {
     }
   }
 
-  public <S, D> TypeMap<S, D> getOrCreate(Class<S> sourceType, Class<D> destinationType,
-      String typeMapName, ExpressionMap<S, D> mapper, MappingEngineImpl engine) {
-    synchronized (lock) {
-      TypePair<S, D> typePair = TypePair.of(sourceType, destinationType, typeMapName);
-      @SuppressWarnings("unchecked")
-      TypeMapImpl<S, D> typeMap = (TypeMapImpl<S, D>) typeMaps.get(typePair);
-
-      if (typeMap == null) {
-        typeMap = new TypeMapImpl<S, D>(sourceType, destinationType, typeMapName, config, engine);
-        typeMaps.put(typePair, typeMap);
-      }
-
-      mapper.configure(new ConfigurableMapExpressionImpl<S, D>(typeMap));
-      return typeMap;
-    }
-  }
-
   /**
    * Puts a typeMap into store
    *
@@ -166,11 +148,24 @@ public final class TypeMapStore {
   public void put(TypeMap<?, ?> typeMap) {
     TypePair<?, ?> typePair = TypePair.of(typeMap.getSourceType(),
         typeMap.getDestinationType(), typeMap.getName());
-
     synchronized (lock) {
-      if (typeMaps.containsKey(typePair)) {
+      if (typeMaps.containsKey(typePair))
         throw new IllegalArgumentException("TypeMap exists in the store: " + typePair.toString());
-      }
+      typeMaps.put(typePair, typeMap);
+    }
+  }
+
+  /**
+   * Puts a typeMap into store
+   *
+   * @throws IllegalArgumentException if {@link TypePair} of typeMap is already exists in the store
+   */
+  public <S, D> void put(Class<S> sourceType, Class<D> destinationType, TypeMap<S, ? extends D> typeMap) {
+    TypePair<S, D> typePair = TypePair.of(sourceType, destinationType,
+        typeMap.getName());
+    synchronized (lock) {
+      if (typeMaps.containsKey(typePair))
+        throw new IllegalArgumentException("TypeMap exists in the store: " + typePair.toString());
       typeMaps.put(typePair, typeMap);
     }
   }
