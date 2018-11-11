@@ -93,8 +93,11 @@ class ProxyFactory {
           .make();
       final ClassLoadingStrategy<ClassLoader> classLoadingStrategy = chooseClassLoadingStrategy(type);
       if (classLoadingStrategy != null) {
+
+        ClassLoader loader = type.getClassLoader() == null ? ClassLoader.getSystemClassLoader() : type.getClassLoader();
+
         return OBJENESIS.newInstance(unloaded
-            .load(useOSGiClassLoaderBridging ? BridgeClassLoaderFactory.getClassLoader(type) : type.getClassLoader(), classLoadingStrategy)
+            .load(useOSGiClassLoaderBridging ? BridgeClassLoaderFactory.getClassLoader(type) : loader, classLoadingStrategy)
             .getLoaded());
       } else {
         return OBJENESIS.newInstance(unloaded
