@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.modelmapper</groupId>
     <artifactId>modelmapper-parent</artifactId>
-    <version>2.3.1-ignore-destination</version>
+		<version>2.3.2-ignore-destination</version>
   </parent>
 
   <artifactId>modelmapper</artifactId>
@@ -26,6 +26,11 @@
         <artifactId>asm</artifactId>
         <version>${asm.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm-commons</artifactId>
+        <version>${asm.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -33,11 +38,6 @@
     <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm-tree</artifactId>
-      <version>${asm.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-commons</artifactId>
       <version>${asm.version}</version>
     </dependency>
     <dependency>
@@ -54,16 +54,6 @@
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy-dep</artifactId>
       <version>${bytebuddy.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.ow2.asm</groupId>
-          <artifactId>asm-commons</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- Test Dependencies -->
@@ -124,10 +114,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <executions>
           <execution>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
@@ -178,7 +167,7 @@
         <version>3.5.0</version>
         <executions>
           <execution>
-            <phase>process-classes</phase>
+            <id>bundle-manifest</id>
             <goals>
               <goal>manifest</goal>
             </goals>
@@ -187,19 +176,22 @@
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <!-- do not export internal packages, remove autoimport -->
             <Export-Package>
-              org.modelmapper,
-              org.modelmapper.builder,
-              org.modelmapper.config,
-              org.modelmapper.convention,
-              org.modelmapper.spi
+              !org.modelmapper.internal.*,
+              org.modelmapper*;-noimport:=true
             </Export-Package>
+            <!-- this directive allow to calculate imports also of dependencies -->
+            <Embed-Dependency>*;scope=runtime;inline=true</Embed-Dependency>
+            <!-- filter out package of shaded dependencies -->
             <Import-Package>
-              javax.xml.datatype
+              !net.bytebuddy*,
+              !org.objectweb*,
+              !net.jodah*,
+              !org.objenesis*,
+              sun.misc;resolution:=optional,
+              *
             </Import-Package>
-            <Private-Package>
-              org.modelmapper.internal.*
-            </Private-Package>
           </instructions>
         </configuration>
       </plugin>
