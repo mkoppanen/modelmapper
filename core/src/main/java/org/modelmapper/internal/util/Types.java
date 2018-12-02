@@ -72,7 +72,7 @@ public final class Types {
   }
 
   public static boolean isProxied(Class<?> type) {
-    if (type.getName().contains("$ByteBuddy$"))
+    if (type.getName().contains("$ByteBuddy$") || type.getName().contains("$HibernateProxy$"))
       return true;
     if (type.getName().contains("$$EnhancerBy"))
       return true;
