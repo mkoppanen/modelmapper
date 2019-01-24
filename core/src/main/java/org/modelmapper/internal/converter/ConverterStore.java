@@ -18,6 +18,7 @@ package org.modelmapper.internal.converter;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.modelmapper.internal.util.Types;
 import org.modelmapper.spi.ConditionalConverter;
 import org.modelmapper.spi.ConditionalConverter.MatchResult;
 
@@ -51,6 +52,13 @@ public final class ConverterStore {
   public <S, D> ConditionalConverter<S, D> getFirstSupported(Class<?> sourceType,
       Class<?> destinationType) {
     ConditionalConverter<S, D> firstPartialMatchConverter = null;
+
+    if (Types.isProxied(sourceType)) {
+      sourceType = Types.deProxy(sourceType);
+    }
+    if (Types.isProxied(destinationType)) {
+      destinationType = Types.deProxy(destinationType);
+    }
 
     for (ConditionalConverter<?, ?> converter : converters) {
       MatchResult matchResult = converter.match(sourceType, destinationType);

@@ -115,6 +115,15 @@ public final class TypeMapStore {
       String typeMapName, PropertyMap<S, D> propertyMap, Converter<S, D> converter,
       MappingEngineImpl engine) {
     synchronized (lock) {
+
+      if (Types.isProxied(sourceType)) {
+        sourceType = Types.deProxy(sourceType);
+      }
+
+      if (Types.isProxied(destinationType)) {
+        destinationType = Types.deProxy(destinationType);
+      }
+
       TypePair<S, D> typePair = TypePair.of(sourceType, destinationType, typeMapName);
       TypeMapImpl<S, D> typeMap = (TypeMapImpl<S, D>) typeMaps.get(typePair);
 
