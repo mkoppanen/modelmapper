@@ -15,7 +15,6 @@
  */
 package org.modelmapper.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,16 +28,12 @@ import org.modelmapper.convention.NameTransformers;
 import org.modelmapper.convention.NamingConventions;
 import org.modelmapper.internal.converter.AssignableConverter;
 import org.modelmapper.internal.converter.ConverterStore;
+import org.modelmapper.internal.converter.MergingCollectionConverter;
+import org.modelmapper.internal.converter.NonMergingCollectionConverter;
 import org.modelmapper.internal.util.Assert;
 import org.modelmapper.internal.valueaccess.ValueAccessStore;
 import org.modelmapper.internal.valuemutate.ValueMutateStore;
-import org.modelmapper.spi.ConditionalConverter;
-import org.modelmapper.spi.MatchingStrategy;
-import org.modelmapper.spi.NameTokenizer;
-import org.modelmapper.spi.NameTransformer;
-import org.modelmapper.spi.NamingConvention;
-import org.modelmapper.spi.ValueReader;
-import org.modelmapper.spi.ValueWriter;
+import org.modelmapper.spi.*;
 
 /**
  * Inheritable mapping configuration implementation.
@@ -67,6 +62,7 @@ public class InheritingConfiguration implements Configuration {
   private Boolean fullTypeMatchingRequired;
   private Boolean implicitMatchingEnabled;
   private Boolean skipNullEnabled;
+  private Boolean collectionsMergeEnabled;
   private Boolean useOSGiClassLoaderBridging;
   private Map<String, List<String>> ignoreDestinationPaths;
 
@@ -95,6 +91,7 @@ public class InheritingConfiguration implements Configuration {
     skipNullEnabled = Boolean.FALSE;
     useOSGiClassLoaderBridging = Boolean.FALSE;
     ignoreDestinationPaths = new HashMap<String, List<String>>();
+    collectionsMergeEnabled = Boolean.TRUE;
   }
 
   /**
@@ -128,6 +125,7 @@ public class InheritingConfiguration implements Configuration {
       implicitMatchingEnabled = source.implicitMatchingEnabled;
       skipNullEnabled = source.skipNullEnabled;
       ignoreDestinationPaths = source.ignoreDestinationPaths;
+      collectionsMergeEnabled = source.collectionsMergeEnabled;
     }
   }
 
@@ -337,6 +335,11 @@ public class InheritingConfiguration implements Configuration {
   }
 
   @Override
+  public boolean isCollectionsMergeEnabled() {
+    return converterStore.hasConverter(NonMergingCollectionConverter.class);
+  }
+
+  @Override
   public Configuration setAmbiguityIgnored(boolean ignore) {
     this.ambiguityIgnored = ignore;
     return this;
@@ -400,6 +403,22 @@ public class InheritingConfiguration implements Configuration {
   }
 
   @Override
+  public Configuration setCollectionsMergeEnabled(boolean enabled) {
+    if (enabled && !converterStore.hasConverter(MergingCollectionConverter.class)) {
+      if (converterStore.hasConverter(NonMergingCollectionConverter.class)) {
+        converterStore.removeConverter(NonMergingCollectionConverter.class);
+      }
+      converterStore.addConverter(new MergingCollectionConverter());
+    } else if (!enabled && !converterStore.hasConverter(NonMergingCollectionConverter.class)) {
+        if (converterStore.hasConverter(MergingCollectionConverter.class)){
+            converterStore.removeConverter(MergingCollectionConverter.class);
+        }
+        converterStore.addConverter(new NonMergingCollectionConverter());
+    }
+    return this;
+  }
+
+  @Override
   public Configuration setMatchingStrategy(MatchingStrategy matchingStrategy) {
     this.matchingStrategy = Assert.notNull(matchingStrategy);
     return this;
@@ -446,7 +465,6 @@ public class InheritingConfiguration implements Configuration {
     this.useOSGiClassLoaderBridging = useOSGiClassLoaderBridging;
     return this;
   }
-
   public Configuration setIgnoreDestinationPaths(Map<String, List<String>> ignoreDestinationPaths) {
     this.ignoreDestinationPaths = ignoreDestinationPaths;
     return this;

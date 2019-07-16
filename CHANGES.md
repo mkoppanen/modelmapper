@@ -1,3 +1,20 @@
+# 2.3.4
+
+### New Features
+
+* Supports protocol buffer with model in snake case
+
+# 2.3.3
+
+### New Features
+
+* Provides setCollectionsMergeEnabled configuration
+
+### Bug Fixes
+
+* Date converter supports java.util.Date
+* Supports HibernateProxy
+
 # 2.3.2
 
 * #416: asm7.0 support
