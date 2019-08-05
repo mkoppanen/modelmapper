@@ -24,10 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.modelmapper.Converter;
 import org.modelmapper.TypeMap;
+import org.modelmapper.config.ModelMapperIgnoreSourceHierarchy;
 import org.modelmapper.internal.PropertyInfoImpl.ValueReaderPropertyInfo;
 import org.modelmapper.internal.converter.ConverterStore;
 import org.modelmapper.internal.util.Iterables;
@@ -183,6 +183,11 @@ class ImplicitMappingBuilder<S, D> {
 
     for (Map.Entry<String, Accessor> entry : sourceTypeInfo.getAccessors().entrySet()) {
       Accessor accessor = entry.getValue();
+
+      if (accessor.getAnnotation(ModelMapperIgnoreSourceHierarchy.class) != null) {
+        continue;
+      }
+
       propertyNameInfo.pushSource(entry.getKey(), entry.getValue());
       boolean doneMatching = false;
 
