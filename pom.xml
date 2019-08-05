@@ -16,22 +16,7 @@
   <description>Simple, Intelligent, Object Mapping</description>
   <url>http://modelmapper.org</url>
   <inceptionYear>2011</inceptionYear>
-  <distributionManagement>
-    <repository>
-      <uniqueVersion>true</uniqueVersion>
-      <id>artifacts.remediolisbon.com</id>
-      <name>Remedio Lisbon</name>
-      <layout>default</layout>
-      <url>https://artifacts.remediolisbon.com/repository/tanager-maven/</url>
-    </repository>
-    <snapshotRepository>
-      <uniqueVersion>false</uniqueVersion>
-      <id>artifacts.remediolisbon.com</id>
-      <name>Remedio Lisbon</name>
-      <layout>default</layout>
-      <url>https://artifacts.remediolisbon.com/repository/tanager-maven/</url>
-    </snapshotRepository>
-  </distributionManagement>
+
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
